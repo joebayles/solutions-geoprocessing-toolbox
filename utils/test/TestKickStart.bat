@@ -29,8 +29,9 @@ rem ==================================================
 rem  history:
 rem  10/06/2015 - MF - placeholder
 rem  10/30/2015 - MF - tests running
-rem  12/01/2015 - JH - added paremeter for default log file name
+rem  12/01/2015 - JH - added parameter for default log file name
 rem  07/05/2016 - MF - updates to changes for Pro 1.3+
+rem  02/24/2017 - MF - more updates for Pro 1.4.1/ArcMap 10.5
 rem ==================================================
 
 REM === TEST SETUP ===================================
@@ -43,16 +44,16 @@ REM name is optional; if not specified, name will be specified for you
 set LOG=
 REM === LOG SETUP ====================================
 
-
 REM === SINGLE VERSION ==================================
 REM If you only have ONE version of Python installed
-REM uncomment the following lines
+REM uncomment the following lines of code
 REM =====================================================
 REM python TestRunner.py
 REM IF %ERRORLEVEL% NEQ 0 (
 REM    ECHO 'One or more tests failed'
 REM )
 REM === SINGLE VERSION ==================================
+
 
 
 REM === MULTIPLE VERSIONS ===============================
@@ -69,8 +70,9 @@ IF %ERRORLEVEL% NEQ 0 (
    ECHO 'One or more tests failed'
 )
 ECHO Python 2.7 Tests ===============================
-REM py -2.7 TestRunner.py %LOG%
-py TestRunner.py %LOG%
+REM The location of python.exe will depend upon your installation
+REM of Python 2.x. Modify the following line as necessary:
+"C:\Python27\ArcGIS10.5\python.exe" TestRunner.py %LOG%
 REM check if Desktop for ArcGIS/Python 2.7 tests failed
 IF %ERRORLEVEL% NEQ 0 (
    ECHO 'One or more tests failed'
@@ -79,8 +81,6 @@ REM === MULTIPLE VERSIONS ===============================
 
 
 REM === CLEANUP =========================================
-ECHO Removing RangeRingUtils.py ...
-DEL ".\distance_tests\RangeRingUtils.py"
 REM === CLEANUP =========================================
 
 pause

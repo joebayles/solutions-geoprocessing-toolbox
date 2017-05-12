@@ -58,14 +58,16 @@ class ERGTest(unittest.TestCase):
     scratchGDB = None
     scriptFolderPath = os.path.join(Configuration.repoPath, "capability",
                                     "toolboxes", "scripts", "ERG.py")
+    # dbfFolderPath = os.path.join(Configuration.repoPath, "capability",
+    #                              "toolboxes", "tooldata", "ERG2012LookupTable.dbf")
     dbfFolderPath = os.path.join(Configuration.repoPath, "capability",
-                                 "toolboxes", "tooldata", "ERG2012LookupTable.dbf")
+                                 "toolboxes", "tooldata", "ERG2016LookupTable.dbf")
     testDataFolderPath = os.path.join(Configuration.capabilityPath, "data")
 
     def setUp(self):
         ''' set-up code '''
         if Configuration.DEBUG:
-            print("         ERGScript.setUp")
+            print(".....ERGScript.setUp")
         UnitTestUtilities.checkArcPy()
         UnitTestUtilities.checkFilePaths([self.scriptFolderPath,
                                           self.testDataFolderPath])
@@ -79,28 +81,27 @@ class ERGTest(unittest.TestCase):
     def tearDown(self):
         ''' clean up after tests'''
         if Configuration.DEBUG:
-            print("         ERGScript.tearDown")
+            print(".....ERGScript.tearDown")
         UnitTestUtilities.deleteScratch(self.scratchGDB)
         return
 
     ergDict = {
         '001': [1017, 124, 'Chlorine', 'Large', 'Day', 500.0, 3000.0],
         '002': [1076, 125, 'Phosgene', 'Small', 'Day', 100.0, 600.0],
-        '003': [2810, 153, 'Sarin (when used as a weapon)', 'Large', 'Night', 400.0, 4900.0]
+        '003': [2810, 153, 'GB (Weaponized Sarin)', 'Large', 'Night', 400.0, 4900.0]
         }
 
     def test_LookUpERG001(self):
         '''
         test case one
-        ERG Table 1, p292: ID No. 1017 Chlorine
+        ERG: ID No. 1017 Chlorine
         '''
-        if Configuration.DEBUG:
-            print("         ERGScript.test_LookUpERG001")
+        if Configuration.DEBUG: print(".....ERGScript.test_LookUpERG001")
         inChemical = 'Chlorine'
         inPlacardID = 1017
         inSpillSize = 'Large' #'Large' or 'Small'
         inTimeOfDay = 'Day' #'Day' or 'Night'
-        outResult = self.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
+        outResult = ERG.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
         self.assertEqual(outResult[0], 500.0) # Initial Isolation Distance
         self.assertEqual(outResult[1], 3000.0) # Protective Action Distance
         self.assertEqual(outResult[2], 'Chlorine') # Materials
@@ -110,15 +111,14 @@ class ERGTest(unittest.TestCase):
     def test_LookUpERG002(self):
         '''
         test case two
-        ERG Table 1, p293: ID No. 1076 Phosgene
+        ERG: ID No. 1076 Phosgene
         '''
-        if Configuration.DEBUG:
-            print("         ERGScript.test_LookUpERG002")
+        if Configuration.DEBUG: print(".....ERGScript.test_LookUpERG002")
         inChemical = 'Phosgene'
         inPlacardID = 1076
         inSpillSize = 'Small' #'Large' or 'Small'
         inTimeOfDay = 'Day' #'Day' or 'Night'
-        outResult = self.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
+        outResult = ERG.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
         self.assertEqual(outResult[0], 100.0) # Initial Isolation Distance
         self.assertEqual(outResult[1], 600.0) # Protective Action Distance
         self.assertEqual(outResult[2], 'Phosgene') # Materials
@@ -128,78 +128,52 @@ class ERGTest(unittest.TestCase):
     def test_LookUpERG003(self):
         '''
         test case three
-        ERG Table 1, p316: ID No. 2810 Sarin
+        ERG: ID No. 2810 Sarin
         '''
-        if Configuration.DEBUG == True: print("         ERGScript.test_LookUpERG003")
-        inChemical = 'Sarin (when used as a weapon)'
+        if Configuration.DEBUG == True: print(".....ERGScript.test_LookUpERG003")
+        inChemical = 'GB (Weaponized Sarin)'
         inPlacardID = 2810
         inSpillSize = 'Large' #'Large' or 'Small'
         inTimeOfDay = 'Night' #'Day' or 'Night'
-        outResult = self.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
-        if Configuration.DEBUG == True: print("outResult: " + str(outResult))
+        outResult = ERG.LookUpERG(inChemical, inPlacardID, inSpillSize, inTimeOfDay, self.dbfFolderPath)
         self.assertEqual(outResult[0], 400.0) # Initial Isolation Distance
         self.assertEqual(outResult[1], 4900.0) # Protective Action Distance
         #self.assertEqual(outResult[2], 'Sarin (when used as a weapon)') # Materials
         self.assertEqual(outResult[3], 153) # GuideNum
         return
 
-    def LookUpERG(self, pChemical, pPlacardID, pSpillSize, pTimeOfDay, pERGdbf):
-        ''' test ERG.py's LookUpERG submodule '''
-        if Configuration.DEBUG:
-            print("         ERGScript.LookUpERG: " + str(pChemical))
-        outLookUpERGTuple = ERG.LookUpERG(pChemical, pPlacardID, pSpillSize, pTimeOfDay, pERGdbf)
-        return outLookUpERGTuple
-
     def test_GetProjectedPoint001(self):
         ''' test case one '''
+        if Configuration.DEBUG == True: print(".....ERGScript.test_GetProjectedPoint001")
         inputPoint = ERGTestUtils.getInputPointFC()
-        outputPoint = self.GetProjectedPoint(inputPoint)
-        # desc = arcpy.Describe(outputPoint)
-        # sr = desc.spatialReference
+        outputPoint = ERG.GetProjectedPoint(inputPoint)
         sr = outputPoint.spatialReference
         self.assertEqual(sr.factoryCode, int(32643))
         return
 
     def test_GetProjectedPoint002(self):
         ''' test case two '''
+        if Configuration.DEBUG == True: print(".....ERGScript.test_GetProjectedPoint002")
         inputPoint = ERGTestUtils.getInputPointFCFromXY(-121.844234,36.586438) 
-        outputPoint = self.GetProjectedPoint(inputPoint)
-        # desc = arcpy.Describe(outputPoint)
-        # sr = desc.spatialReference
+        outputPoint = ERG.GetProjectedPoint(inputPoint)
         sr = outputPoint.spatialReference
         self.assertEqual(sr.factoryCode, int(32610))
         return
 
     def test_GetProjectedPoint003(self):
         ''' test case three '''
+        if Configuration.DEBUG == True: print(".....ERGScript.test_GetProjectedPoint003")
         inputPoint = ERGTestUtils.getInputPointFCFromXY(-68.609535, 46.178194) 
-        outputPoint = self.GetProjectedPoint(inputPoint)
-        # desc = arcpy.Describe(outputPoint)
-        # sr = desc.spatialReference
+        outputPoint = ERG.GetProjectedPoint(inputPoint)
         sr = outputPoint.spatialReference
         self.assertEqual(sr.factoryCode, int(32619))
         return
 
     def test_GetProjectedPoint004(self):
         ''' test case four '''
+        if Configuration.DEBUG == True: print(".....ERGScript.test_GetProjectedPoint004")
         inputPoint = ERGTestUtils.getInputPointFCFromXY(-98.233824, 26.654716) 
-        outputPoint = self.GetProjectedPoint(inputPoint)
-        # desc = arcpy.Describe(outputPoint)
-        # sr = desc.spatialReference
+        outputPoint = ERG.GetProjectedPoint(inputPoint)
         sr = outputPoint.spatialReference
         self.assertEqual(sr.factoryCode, int(32614))
         return
-
-    def GetProjectedPoint(self, inputPoint):
-        ''' test ERG.py's GetProjectedPoint submodule '''
-        if Configuration.DEBUG == True: print("         ERGScript.GetProjectedPoint")
-        #ERG.GetProjectedPoint(pPointFeatureRecordSet)
-        outputPoint = ERG.GetProjectedPoint(inputPoint)
-        return outputPoint
-
-    # def test_MakeERGFeatures(self):
-    #     ''' test ERG.py's MakeERGFeatures submodule '''
-    #     #TODO: write test for MakeERGFeatures
-    #     #ERG.MakeERGFeatures(pProjectedPointGeometry, pWindBlowingToDirection, pInitialIsolationDistance, pProtectiveActionDistance,
-    #     #            pMaterials, pGuideNum, pSpillSize, pTimeOfDay, pOutAreas, pOutLines, pTemplateLoc)
-    #     return
